@@ -118,9 +118,12 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
                 "x-goog-api-key": self.api_key
             }
 
-            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            if self.api_key.startswith("AIza"):
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            else:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
             try:
-                res = requests.post(api_url, headers=headers, json=payload, timeout=60)
+                res = requests.post(url, headers=headers, json=payload, timeout=60)
                 if res.status_code == 200:
                     res_data = res.json()
                     raw_text = res_data['candidates'][0]['content']['parts'][0]['text']
@@ -267,7 +270,10 @@ STRICT JSON OUTPUT FORMAT:
                 "x-goog-api-key": self.api_key
             }
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            if self.api_key.startswith("AIza"):
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            else:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
             try:
                 r = requests.post(url, headers=headers, json=payload, timeout=60)
                 if r.status_code == 200:
@@ -404,7 +410,10 @@ STRICT JSON OUTPUT FORMAT:
                 "x-goog-api-key": self.api_key
             }
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            if self.api_key.startswith("AIza"):
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            else:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
             try:
                 r = requests.post(url, headers=headers, json=payload, timeout=60)
                 if r.status_code == 200:
