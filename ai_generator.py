@@ -118,10 +118,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
                 "x-goog-api-key": self.api_key
             }
 
-            if self.api_key.startswith("AIza"):
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
-            else:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
             try:
                 res = requests.post(url, headers=headers, json=payload, timeout=60)
                 if res.status_code == 200:
@@ -270,10 +267,7 @@ STRICT JSON OUTPUT FORMAT:
                 "x-goog-api-key": self.api_key
             }
 
-            if self.api_key.startswith("AIza"):
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
-            else:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
             try:
                 r = requests.post(url, headers=headers, json=payload, timeout=60)
                 if r.status_code == 200:
@@ -410,10 +404,7 @@ STRICT JSON OUTPUT FORMAT:
                 "x-goog-api-key": self.api_key
             }
 
-            if self.api_key.startswith("AIza"):
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
-            else:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
             try:
                 r = requests.post(url, headers=headers, json=payload, timeout=60)
                 if r.status_code == 200:
