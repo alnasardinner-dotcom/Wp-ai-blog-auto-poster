@@ -5,13 +5,13 @@ from google import genai
 from google.genai import types
 
 class AIContentGenerator:
-    def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model_name: str = "gemini-1.5-flash"):
         self.api_key = api_key.strip() if api_key else ""
-        raw_model = model_name.strip() if model_name else "gemini-2.5-flash"
-        if raw_model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", ""]:
-            self.model_name = "gemini-2.5-flash"
-        else:
+        raw_model = model_name.strip() if model_name else "gemini-1.5-flash"
+        if raw_model in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp", ""]:
             self.model_name = raw_model
+        else:
+            self.model_name = "gemini-1.5-flash"
 
     def generate_article(
         self,
@@ -104,7 +104,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
             pass
 
         # Method 2: Direct REST call to v1beta
-        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        models_to_try = [model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
         models_to_try = list(dict.fromkeys(models_to_try))
         
         last_err = None
@@ -251,7 +251,7 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        models_to_try = [model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
         # Remove duplicates while preserving order
         models_to_try = list(dict.fromkeys(models_to_try))
         
@@ -388,7 +388,7 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        models_to_try = [model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
         models_to_try = list(dict.fromkeys(models_to_try))
         
         last_err = None
