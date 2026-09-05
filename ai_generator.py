@@ -104,7 +104,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
             pass
 
         # Method 2: Direct REST call to v1beta
-        models_to_try = [model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro"]
         models_to_try = list(dict.fromkeys(models_to_try))
         
         last_err = None
@@ -255,7 +255,7 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = [model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro"]
         # Remove duplicates while preserving order
         models_to_try = list(dict.fromkeys(models_to_try))
         
@@ -396,7 +396,7 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = [model, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro"]
         models_to_try = list(dict.fromkeys(models_to_try))
         
         last_err = None
