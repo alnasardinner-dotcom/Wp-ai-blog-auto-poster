@@ -5,13 +5,10 @@ from google import genai
 from google.genai import types
 
 class AIContentGenerator:
-    def __init__(self, api_key: str, model_name: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str, model_name: str = "gemini-3.6-flash"):
         self.api_key = api_key.strip() if api_key else ""
-        raw_model = model_name.strip() if model_name else "gemini-1.5-flash"
-        if raw_model in ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp", ""]:
-            self.model_name = raw_model
-        else:
-            self.model_name = "gemini-1.5-flash"
+        raw_model = model_name.strip() if model_name else "gemini-3.6-flash"
+        self.model_name = raw_model if raw_model else "gemini-3.6-flash"
 
     def generate_article(
         self,
@@ -73,7 +70,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
 """
 
         full_prompt = system_instructions + "\n\n" + prompt
-        model = self.model_name if self.model_name else "gemini-2.5-flash"
+        model = self.model_name if self.model_name else "gemini-3.6-flash"
 
         # Method 1: Try official google-genai SDK
         try:
@@ -104,7 +101,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
             pass
 
         # Method 2: Direct REST call to v1beta
-        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro"]
+        models_to_try = [self.model_name, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.7-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
         models_to_try = list(dict.fromkeys(models_to_try))
         
         last_err = None
@@ -149,16 +146,18 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
         """
         Dynamically fetches valid models supported for generateContent for the user's API Key.
         """
+        defaults = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
         if not self.api_key:
-            return ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.5-flash"]
+            return defaults
         try:
             client = genai.Client(api_key=self.api_key)
             models_list = [m.name.replace("models/", "") for m in client.models.list() if "flash" in m.name or "pro" in m.name]
             if models_list:
-                return models_list
+                valid = [m for m in models_list if not any(deprecated in m for deprecated in ["1.5", "2.0", "2.5"])]
+                return valid if valid else models_list
         except Exception:
             pass
-        return ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.5-flash"]
+        return defaults
 
     def research_search_questions(self, seed_keyword: str, region: str = "Bangladesh") -> dict:
         """
@@ -230,7 +229,7 @@ STRICT JSON OUTPUT FORMAT:
   ]
 }}
 """
-        model = self.model_name if self.model_name else "gemini-2.5-flash"
+        model = self.model_name if self.model_name else "gemini-3.6-flash"
 
         # Method 1: Try official SDK
         try:
@@ -252,7 +251,7 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro"]
+        models_to_try = [self.model_name, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.7-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
         # Remove duplicates while preserving order
         models_to_try = list(dict.fromkeys(models_to_try))
         
@@ -369,7 +368,7 @@ STRICT JSON OUTPUT FORMAT:
   ]
 }}
 """
-        model = self.model_name if self.model_name else "gemini-2.5-flash"
+        model = self.model_name if self.model_name else "gemini-3.6-flash"
 
         try:
             client = genai.Client(api_key=self.api_key)
@@ -390,7 +389,7 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = ["gemini-1.5-flash", "gemini-1.5-pro"]
+        models_to_try = [self.model_name, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.7-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
         models_to_try = list(dict.fromkeys(models_to_try))
         
         last_err = None
