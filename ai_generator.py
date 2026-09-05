@@ -117,6 +117,8 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
                 "Content-Type": "application/json",
                 "x-goog-api-key": self.api_key
             }
+            if self.api_key.startswith("AQ."):
+                headers["Authorization"] = f"Bearer {self.api_key}"
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
             try:
                 res = requests.post(api_url, headers=headers, json=payload, timeout=60)
@@ -265,6 +267,8 @@ STRICT JSON OUTPUT FORMAT:
                 "Content-Type": "application/json",
                 "x-goog-api-key": self.api_key
             }
+            if self.api_key.startswith("AQ."):
+                headers["Authorization"] = f"Bearer {self.api_key}"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
             try:
                 r = requests.post(url, headers=headers, json=payload, timeout=60)
@@ -401,6 +405,8 @@ STRICT JSON OUTPUT FORMAT:
                 "Content-Type": "application/json",
                 "x-goog-api-key": self.api_key
             }
+            if self.api_key.startswith("AQ."):
+                headers["Authorization"] = f"Bearer {self.api_key}"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
             try:
                 r = requests.post(url, headers=headers, json=payload, timeout=60)
