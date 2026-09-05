@@ -5,11 +5,11 @@ from google import genai
 from google.genai import types
 
 class AIContentGenerator:
-    def __init__(self, api_key: str, model_name: str = "gemini-3.6-flash"):
+    def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
         self.api_key = api_key.strip() if api_key else ""
-        raw_model = model_name.strip() if model_name else "gemini-3.6-flash"
+        raw_model = model_name.strip() if model_name else "gemini-2.5-flash"
         if raw_model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", ""]:
-            self.model_name = "gemini-3.6-flash"
+            self.model_name = "gemini-2.5-flash"
         else:
             self.model_name = raw_model
 
@@ -73,7 +73,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
 """
 
         full_prompt = system_instructions + "\n\n" + prompt
-        model = self.model_name if self.model_name else "gemini-3.6-flash"
+        model = self.model_name if self.model_name else "gemini-2.5-flash"
 
         # Method 1: Try official google-genai SDK
         try:
@@ -149,7 +149,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
         Dynamically fetches valid models supported for generateContent for the user's API Key.
         """
         if not self.api_key:
-            return ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash"]
+            return ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.5-flash"]
         try:
             client = genai.Client(api_key=self.api_key)
             models_list = [m.name.replace("models/", "") for m in client.models.list() if "flash" in m.name or "pro" in m.name]
@@ -157,7 +157,7 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
                 return models_list
         except Exception:
             pass
-        return ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash"]
+        return ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.5-flash"]
 
     def research_search_questions(self, seed_keyword: str, region: str = "Bangladesh") -> dict:
         """
@@ -229,7 +229,7 @@ STRICT JSON OUTPUT FORMAT:
   ]
 }}
 """
-        model = self.model_name if self.model_name else "gemini-3.6-flash"
+        model = self.model_name if self.model_name else "gemini-2.5-flash"
 
         # Method 1: Try official SDK
         try:
@@ -367,7 +367,7 @@ STRICT JSON OUTPUT FORMAT:
   ]
 }}
 """
-        model = self.model_name if self.model_name else "gemini-3.6-flash"
+        model = self.model_name if self.model_name else "gemini-2.5-flash"
 
         try:
             client = genai.Client(api_key=self.api_key)
@@ -387,18 +387,34 @@ STRICT JSON OUTPUT FORMAT:
         except Exception:
             pass
 
-        payload = {
-            "contents": [{"parts": [{"text": system_prompt}]}],
-            "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
-        }
-        headers = {"Content-Type": "application/json"}
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
-        r = requests.post(url, headers=headers, json=payload, timeout=60)
-        if r.status_code == 200:
-            raw = r.json()['candidates'][0]['content']['parts'][0]['text']
-            cleaned = re.sub(r'^```json\s*', '', raw.strip(), flags=re.MULTILINE)
-            cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
-            return json.loads(cleaned)
-        else:
-            raise Exception(f"Google Gemini API Error ({model} - HTTP {r.status_code}): {r.text}")
+        # Method 2: Direct REST call
+        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        models_to_try = list(dict.fromkeys(models_to_try))
+        
+        last_err = None
+        for m in models_to_try:
+            payload = {
+                "contents": [{"parts": [{"text": system_prompt}]}],
+                "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "x-goog-api-key": self.api_key
+            }
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            try:
+                r = requests.post(url, headers=headers, json=payload, timeout=60)
+                if r.status_code == 200:
+                    raw = r.json()['candidates'][0]['content']['parts'][0]['text']
+                    cleaned = re.sub(r'^```json\s*', '', raw.strip(), flags=re.MULTILINE)
+                    cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
+                    return json.loads(cleaned)
+                else:
+                    last_err = f"Model {m} HTTP {r.status_code}: {r.text}"
+                    if r.status_code in [429, 400, 404, 401]:
+                        continue
+            except Exception as e:
+                last_err = str(e)
+
+        raise Exception(f"Google Gemini API Error ({model}): {last_err}")
 
