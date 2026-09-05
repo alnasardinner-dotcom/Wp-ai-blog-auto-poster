@@ -1,0 +1,14 @@
+# Secrets & Credentials
+config.json
+.env
+.streamlit/secrets.toml
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+venv/
+env/
