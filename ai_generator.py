@@ -104,31 +104,41 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
             pass
 
         # Method 2: Direct REST call to v1beta
-        payload = {
-            "contents": [{"parts": [{"text": full_prompt}]}],
-            "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
-        }
-        headers = {"Content-Type": "application/json"}
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
+        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
+        last_err = None
+        for m in models_to_try:
+            payload = {
+                "contents": [{"parts": [{"text": full_prompt}]}],
+                "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "x-goog-api-key": self.api_key
+            }
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            try:
+                res = requests.post(api_url, headers=headers, json=payload, timeout=60)
+                if res.status_code == 200:
+                    res_data = res.json()
+                    raw_text = res_data['candidates'][0]['content']['parts'][0]['text']
+                    cleaned_text = re.sub(r'^```json\s*', '', raw_text.strip(), flags=re.MULTILINE)
+                    cleaned_text = re.sub(r'```$', '', cleaned_text.strip(), flags=re.MULTILINE)
+                    
+                    article_data = json.loads(cleaned_text)
+                    
+                    if not article_data.get("title", "").strip().lower().startswith(main_keyword.strip().lower()):
+                        article_data["title"] = f"{main_keyword}: {article_data.get('title', '')}"
+                        
+                    if not article_data.get("meta_description", "").strip().lower().startswith(main_keyword.strip().lower()):
+                        article_data["meta_description"] = f"{main_keyword} - {article_data.get('meta_description', '')}"[:155]
+                        
+                    return article_data
+                else:
+                    last_err = f"HTTP {res.status_code}: {res.text}"
+            except Exception as e:
+                last_err = str(e)
 
-        res = requests.post(api_url, headers=headers, json=payload, timeout=60)
-        if res.status_code == 200:
-            res_data = res.json()
-            raw_text = res_data['candidates'][0]['content']['parts'][0]['text']
-            cleaned_text = re.sub(r'^```json\s*', '', raw_text.strip(), flags=re.MULTILINE)
-            cleaned_text = re.sub(r'```$', '', cleaned_text.strip(), flags=re.MULTILINE)
-            
-            article_data = json.loads(cleaned_text)
-            
-            if not article_data.get("title", "").strip().lower().startswith(main_keyword.strip().lower()):
-                article_data["title"] = f"{main_keyword}: {article_data.get('title', '')}"
-                
-            if not article_data.get("meta_description", "").strip().lower().startswith(main_keyword.strip().lower()):
-                article_data["meta_description"] = f"{main_keyword} - {article_data.get('meta_description', '')}"[:155]
-                
-            return article_data
-        else:
-            raise Exception(f"Google Gemini API Error ({model} - HTTP {res.status_code}): {res.text}")
+        raise Exception(f"Google Gemini API Error ({model}): {last_err}")
 
     def list_available_models(self) -> list:
         """
@@ -237,21 +247,31 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        payload = {
-            "contents": [{"parts": [{"text": system_prompt}]}],
-            "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
-        }
-        headers = {"Content-Type": "application/json"}
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
-        r = requests.post(url, headers=headers, json=payload, timeout=60)
-        if r.status_code == 200:
-            raw = r.json()['candidates'][0]['content']['parts'][0]['text']
-            cleaned = re.sub(r'^```json\s*', '', raw.strip(), flags=re.MULTILINE)
-            cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
-            return json.loads(cleaned)
-        else:
-            raise Exception(f"Google Gemini API Error ({model} - HTTP {r.status_code}): {r.text}")
+        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
+        last_err = None
+        for m in models_to_try:
+            payload = {
+                "contents": [{"parts": [{"text": system_prompt}]}],
+                "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "x-goog-api-key": self.api_key
+            }
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            try:
+                r = requests.post(url, headers=headers, json=payload, timeout=60)
+                if r.status_code == 200:
+                    raw = r.json()['candidates'][0]['content']['parts'][0]['text']
+                    cleaned = re.sub(r'^```json\s*', '', raw.strip(), flags=re.MULTILINE)
+                    cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
+                    return json.loads(cleaned)
+                else:
+                    last_err = f"HTTP {r.status_code}: {r.text}"
+            except Exception as e:
+                last_err = str(e)
+                
+        raise Exception(f"Google Gemini API Error ({model}): {last_err}")
 
     def research_multi_ai_intent(self, niche_or_topic: str, region: str = "Bangladesh 🇧🇩") -> dict:
         """
