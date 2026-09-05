@@ -104,7 +104,9 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
             pass
 
         # Method 2: Direct REST call to v1beta
-        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
+        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        models_to_try = list(dict.fromkeys(models_to_try))
+        
         last_err = None
         for m in models_to_try:
             payload = {
@@ -134,11 +136,13 @@ Ensure the title and meta_description strictly START with '{main_keyword}'.
                         
                     return article_data
                 else:
-                    last_err = f"HTTP {res.status_code}: {res.text}"
+                    last_err = f"Model {m} HTTP {res.status_code}: {res.text}"
+                    if res.status_code in [429, 400, 404]:
+                        continue
             except Exception as e:
                 last_err = str(e)
 
-        raise Exception(f"Google Gemini API Error ({model}): {last_err}")
+        raise Exception(f"Google Gemini API Quota Limit. Please retry in a few moments. Details: {last_err}")
 
     def list_available_models(self) -> list:
         """
@@ -247,7 +251,10 @@ STRICT JSON OUTPUT FORMAT:
             pass
 
         # Method 2: Direct REST call
-        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
+        models_to_try = [model, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        # Remove duplicates while preserving order
+        models_to_try = list(dict.fromkeys(models_to_try))
+        
         last_err = None
         for m in models_to_try:
             payload = {
@@ -267,11 +274,14 @@ STRICT JSON OUTPUT FORMAT:
                     cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
                     return json.loads(cleaned)
                 else:
-                    last_err = f"HTTP {r.status_code}: {r.text}"
+                    last_err = f"Model {m} HTTP {r.status_code}: {r.text}"
+                    # If quota/rate limit error (429 or RESOURCE_EXHAUSTED), continue to next model in loop
+                    if r.status_code in [429, 400, 404]:
+                        continue
             except Exception as e:
                 last_err = str(e)
                 
-        raise Exception(f"Google Gemini API Error ({model}): {last_err}")
+        raise Exception(f"Google Gemini API Quota Limit. Please retry in a few moments. Details: {last_err}")
 
     def research_multi_ai_intent(self, niche_or_topic: str, region: str = "Bangladesh 🇧🇩") -> dict:
         """
