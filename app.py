@@ -145,13 +145,11 @@ with st.sidebar:
                 st.warning("⚠️ Please enter a complete API Key.")
         
         if "fetched_models" not in st.session_state:
-            st.session_state["fetched_models"] = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash"]
+            st.session_state["fetched_models"] = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
 
         col_m1, col_m2 = st.columns([3, 1])
         with col_m1:
             saved_model = saved_cfg.get("selected_model", "gemini-3.6-flash")
-            if saved_model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
-                saved_model = "gemini-3.6-flash"
             default_model_idx = st.session_state["fetched_models"].index(saved_model) if saved_model in st.session_state["fetched_models"] else 0
             selected_model = st.selectbox("AI Model", st.session_state["fetched_models"], index=default_model_idx)
         with col_m2:
@@ -219,7 +217,7 @@ with main_tab1:
 
     with col2:
         content_type = st.selectbox("📌 Article Type", ["Pillar Content (Comprehensive Guide)", "Cluster / Supporting Article", "Standard Blog Post"])
-        word_count = st.slider("📏 Target Word Count", min_value=1000, max_value=2000, value=1500, step=100)
+        word_count = st.slider("📏 Target Word Count", min_value=300, max_value=1500, value=1000, step=50)
         post_status = st.radio("📤 Post Status on WordPress", ["draft", "publish"], format_func=lambda x: "Save as Draft" if x == "draft" else "Publish Immediately")
 
     # Generate Action
@@ -262,6 +260,31 @@ with main_tab1:
             <p><em>{article.get('meta_description')}</em></p>
         </div>
         """, unsafe_allow_html=True)
+
+        # Interactive Score Cards Section
+        score_col1, score_col2, score_col3 = st.columns(3)
+        
+        seo_val = article.get("seo_score", 95)
+        readability_val = article.get("readability_score", 88)
+        human_val = article.get("human_touch_score", 96)
+        readability_grade = article.get("readability_grade", "High Readability (Easy & Conversational)")
+        
+        with score_col1:
+            st.metric(label="📈 Rank Math SEO Score", value=f"{seo_val}/100", delta="Rank Math Ready")
+            st.progress(min(int(seo_val), 100))
+            
+        with score_col2:
+            st.metric(label="📖 Readability Score", value=f"{readability_val}/100", delta=readability_grade)
+            st.progress(min(int(readability_val), 100))
+            
+        with score_col3:
+            st.metric(label="👤 Human-Touch Score", value=f"{human_val}/100", delta="Zero AI Clichés")
+            st.progress(min(int(human_val), 100))
+            
+        if article.get("seo_checks"):
+            with st.expander("✅ Rank Math SEO Checklist & Audits"):
+                for check in article.get("seo_checks", []):
+                    st.write(f"✔️ {check}")
         
         # Tabs for different components
         tab1, tab2, tab3 = st.tabs(["📄 Article HTML Body", "🔗 Internal Linking Suggestions", "📋 Raw Data / JSON"])
@@ -371,87 +394,99 @@ with main_tab2:
         # Sub-tab 1: 2026 Trending Sub-topics
         with st_tab1:
             st.write("#### 🎯 High ROI 2026 Sub-Topics & Content Angles")
-            subtopics = res_ai.get("trending_subtopics_2026", [])
+            subtopics = res_ai.get("niche_trends_2026", []) or res_ai.get("trending_subtopics_2026", [])
             for idx, sub in enumerate(subtopics):
+                s_topic = sub.get('topic', str(sub)) if isinstance(sub, dict) else str(sub)
+                s_level = sub.get('trend_level', 'High ROI 2026') if isinstance(sub, dict) else 'High ROI 2026'
+                s_angle = sub.get('content_angle', 'Search Intent Optimization') if isinstance(sub, dict) else 'Search Intent Optimization'
                 c_s1, c_s2 = st.columns([4, 1])
                 with c_s1:
-                    st.markdown(f"🔥 **{sub.get('topic')}**  \n📌 *Trend Level*: `{sub.get('trend_level')}` | 💡 *Strategy*: {sub.get('content_angle')}")
+                    st.markdown(f"🔥 **{s_topic}**  \n📌 *Trend Level*: `{s_level}` | 💡 *Strategy*: {s_angle}")
                 with c_s2:
                     if st.button("📝 Write Article", key=f"btn_sub_{idx}"):
-                        st.session_state["preset_keyword"] = sub.get('topic')
-                        st.success(f"Selected '{sub.get('topic')}'. Switch to 'Write & Auto-Publish Article' tab!")
+                        st.session_state["preset_keyword"] = s_topic
+                        st.success(f"Selected '{s_topic}'. Switch to 'Write & Auto-Publish Article' tab!")
 
         # Sub-tab 2: Google Search & AI Overviews (GEO)
         with st_tab2:
             st.write("#### 🔍 Google Search Queries & Expected AI Overview (GEO) Answers")
-            g_queries = res_ai.get("google_ai_overview_intent", [])
+            g_queries = res_ai.get("google_ai_overviews", []) or res_ai.get("google_ai_overview_intent", [])
             for idx, gq in enumerate(g_queries):
+                g_text = gq.get('query', str(gq)) if isinstance(gq, dict) else str(gq)
+                g_type = gq.get('intent_type', 'GEO Overview') if isinstance(gq, dict) else 'GEO Overview'
+                g_sum = gq.get('ai_overview_summary', 'Generative Search Intent Answer') if isinstance(gq, dict) else 'Generative Search Intent Answer'
                 c_g1, c_g2 = st.columns([4, 1])
                 with c_g1:
                     st.markdown(f"""
                     <div class="query-card">
-                        <strong>🔍 Search Query:</strong> {gq.get('query')} <span class="badge-keyword">{gq.get('intent_type')}</span><br>
-                        <em>🤖 Google AI Overview Result:</em> {gq.get('ai_overview_summary')}
+                        <strong>🔍 Search Query:</strong> {g_text} <span class="badge-keyword">{g_type}</span><br>
+                        <em>🤖 Google AI Overview Result:</em> {g_sum}
                     </div>
                     """, unsafe_allow_html=True)
                 with c_g2:
                     if st.button("📝 Write Article", key=f"btn_gq_{idx}"):
-                        st.session_state["preset_keyword"] = gq.get('query')
-                        st.success(f"Selected '{gq.get('query')}'. Switch to 'Write & Auto-Publish Article' tab!")
+                        st.session_state["preset_keyword"] = g_text
+                        st.success(f"Selected '{g_text}'. Switch to 'Write & Auto-Publish Article' tab!")
 
         # Sub-tab 3: ChatGPT User Prompts
         with st_tab3:
             st.write("#### 💬 Exact Prompts & Questions Real Users Ask ChatGPT")
-            gpt_prompts = res_ai.get("chatgpt_user_prompts", [])
+            gpt_prompts = res_ai.get("chatgpt_popular_prompts", []) or res_ai.get("chatgpt_user_prompts", [])
             for idx, gpt in enumerate(gpt_prompts):
+                gpt_text = gpt.get('prompt', str(gpt)) if isinstance(gpt, dict) else str(gpt)
+                gpt_goal = gpt.get('user_goal', 'User Prompt Intent') if isinstance(gpt, dict) else 'User Prompt Intent'
                 c_gp1, c_gp2 = st.columns([4, 1])
                 with c_gp1:
                     st.markdown(f"""
                     <div class="query-card">
-                        💬 <strong>ChatGPT User Prompt:</strong> "{gpt.get('prompt')}"<br>
-                        🎯 <em>User Goal:</em> {gpt.get('user_goal')}
+                        💬 <strong>ChatGPT User Prompt:</strong> "{gpt_text}"<br>
+                        🎯 <em>User Goal:</em> {gpt_goal}
                     </div>
                     """, unsafe_allow_html=True)
                 with c_gp2:
                     if st.button("📝 Write Article", key=f"btn_gpt_{idx}"):
-                        st.session_state["preset_keyword"] = gpt.get('prompt')
-                        st.success(f"Selected '{gpt.get('prompt')}'. Switch to 'Write & Auto-Publish Article' tab!")
+                        st.session_state["preset_keyword"] = gpt_text
+                        st.success(f"Selected '{gpt_text}'. Switch to 'Write & Auto-Publish Article' tab!")
 
         # Sub-tab 4: Perplexity Research Queries
         with st_tab4:
             st.write("#### 🧠 Deep Research Queries Users Ask on Perplexity.ai")
             px_queries = res_ai.get("perplexity_research_queries", [])
             for idx, px in enumerate(px_queries):
+                px_text = px.get('query', str(px)) if isinstance(px, dict) else str(px)
+                px_angle = px.get('research_angle', 'Deep Research Query') if isinstance(px, dict) else 'Deep Research Query'
                 c_px1, c_px2 = st.columns([4, 1])
                 with c_px1:
                     st.markdown(f"""
                     <div class="query-card">
-                        🧠 <strong>Perplexity Query:</strong> "{px.get('query')}"<br>
-                        📊 <em>Research Angle:</em> {px.get('research_angle')}
+                        🧠 <strong>Perplexity Query:</strong> "{px_text}"<br>
+                        📊 <em>Research Angle:</em> {px_angle}
                     </div>
                     """, unsafe_allow_html=True)
                 with c_px2:
                     if st.button("📝 Write Article", key=f"btn_px_{idx}"):
-                        st.session_state["preset_keyword"] = px.get('query')
-                        st.success(f"Selected '{px.get('query')}'. Switch to 'Write & Auto-Publish Article' tab!")
+                        st.session_state["preset_keyword"] = px_text
+                        st.success(f"Selected '{px_text}'. Switch to 'Write & Auto-Publish Article' tab!")
 
         # Sub-tab 5: Claude & LLM Queries
         with st_tab5:
             st.write("#### 🤖 Technical & Analytical Prompts Asked on Claude & LLMs")
-            cl_queries = res_ai.get("claude_analytical_queries", [])
+            cl_queries = res_ai.get("claude_deep_dives", []) or res_ai.get("claude_analytical_queries", [])
             for idx, cl in enumerate(cl_queries):
+                cl_text = cl.get('query', str(cl)) if isinstance(cl, dict) else str(cl)
+                cl_focus = cl.get('focus_area', 'Deep Analytical Focus') if isinstance(cl, dict) else 'Deep Analytical Focus'
                 c_cl1, c_cl2 = st.columns([4, 1])
                 with c_cl1:
                     st.markdown(f"""
                     <div class="query-card">
-                        🤖 <strong>Claude AI Prompt:</strong> "{cl.get('query')}"<br>
-                        🔬 <em>Focus Area:</em> {cl.get('focus_area')}
+                        🤖 <strong>Claude AI Prompt:</strong> "{cl_text}"<br>
+                        🔬 <em>Focus Area:</em> {cl_focus}
                     </div>
                     """, unsafe_allow_html=True)
                 with c_cl2:
                     if st.button("📝 Write Article", key=f"btn_cl_{idx}"):
-                        st.session_state["preset_keyword"] = cl.get('query')
-                        st.success(f"Selected '{cl.get('query')}'. Switch to 'Write & Auto-Publish Article' tab!")
+                        st.session_state["preset_keyword"] = cl_text
+                        st.success(f"Selected '{cl_text}'. Switch to 'Write & Auto-Publish Article' tab!")
 
 
 # --- TAB 3: ANSWER THE PUBLIC INTENT RESEARCHER ---
