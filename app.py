@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import importlib
+import pandas as pd
 
 try:
     import modules.ai_generator
@@ -95,8 +96,11 @@ if "research_results" not in st.session_state:
     st.session_state["research_results"] = None
 if "multi_ai_results" not in st.session_state:
     st.session_state["multi_ai_results"] = None
+if "search_volume_results" not in st.session_state:
+    st.session_state["search_volume_results"] = None
 if "is_credentials_unlocked" not in st.session_state:
     st.session_state["is_credentials_unlocked"] = False
+
 
 # Load Saved Credentials
 saved_cfg = load_config()
@@ -200,11 +204,13 @@ with st.sidebar:
         st.info("💡 **Tip**: Click **💾 Save Settings** to automatically remember your API keys & WP credentials.")
 
 # Main Navigation Tabs
-main_tab1, main_tab2, main_tab3 = st.tabs([
+main_tab1, main_tab2, main_tab3, main_tab4 = st.tabs([
     "📝 Write & Auto-Publish Article", 
     "🤖 Multi-AI & 2026 Niche Intent Intelligence", 
-    "🔎 AnswerThePublic Search Intent Researcher"
+    "🔎 AnswerThePublic Search Intent Researcher",
+    "📊 2026 Search Volume & Topic Trends (CSV Export)"
 ])
+
 
 # --- TAB 1: ARTICLE GENERATOR ---
 with main_tab1:
@@ -571,4 +577,122 @@ with main_tab3:
                     if st.button("📝 Write Article", key=f"btn_p_{idx}"):
                         st.session_state["preset_keyword"] = paa
                         st.success(f"Selected '{paa}'. Switch to 'Write & Auto-Publish Article' tab to generate!")
+
+# --- TAB 4: 2026 SEARCH VOLUME & TOPIC TRENDS (CSV EXPORT) ---
+with main_tab4:
+    st.markdown("### 📊 2026 Monthly Search Volume & Topic Trends Intelligence")
+    st.write("Analyze 30-day (1 month) monthly search volume estimates, regional demand (Bangladesh 🇧🇩 vs Worldwide 🌐), topic volume distribution, and export data to CSV.")
+
+    vol_col1, vol_col2, vol_col3 = st.columns([2, 1, 1])
+    with vol_col1:
+        vol_niche_input = st.text_input("🎯 Topic or Seed Niche", placeholder="e.g. Laptops, Digital Marketing, Smartwatches BD", key="vol_niche_input")
+    with vol_col2:
+        vol_region_input = st.selectbox("🌐 Region / Location", ["Bangladesh 🇧🇩", "Worldwide 🌐", "USA 🇺🇸", "UK 🇬🇧", "India 🇮🇳"], key="vol_region_input")
+    with vol_col3:
+        vol_timeframe_input = st.selectbox("📅 Timeframe Filter", ["Last 1 Month (30 Days)", "Last 3 Months", "2026 Full Year Projections"], key="vol_timeframe_input")
+
+    if st.button("🚀 Analyze Search Volume & Topic Trends", type="primary", use_container_width=True):
+        if not gemini_api_key:
+            st.error("❌ Please enter your Gemini API Key in the sidebar first.")
+        elif not vol_niche_input:
+            st.error("❌ Please enter a Topic or Seed Niche.")
+        else:
+            with st.spinner("📊 Mining 2026 Monthly Search Volume & Topic Data..."):
+                try:
+                    generator = AIContentGenerator(api_key=gemini_api_key, model_name=selected_model)
+                    vol_data = generator.research_search_volume_analytics(
+                        niche_or_topic=vol_niche_input, 
+                        region=vol_region_input, 
+                        timeframe=vol_timeframe_input
+                    )
+                    st.session_state["search_volume_results"] = vol_data
+                    st.success("✅ Search volume analytics generated!")
+                except Exception as e:
+                    st.error(f"❌ Error fetching volume analytics: {str(e)}")
+
+    if st.session_state.get("search_volume_results"):
+        vdata = st.session_state["search_volume_results"]
+        st.markdown("---")
+        st.markdown(f"### 📈 Search Volume & Topic Breakdown for `{vdata.get('niche')}`")
+        st.caption(f"📍 Location: **{vdata.get('region')}** | ⏱️ Timeframe: **{vdata.get('timeframe')}**")
+
+        # Summary Metric Cards
+        metrics = vdata.get("summary_metrics", {})
+        m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
+        with m_col1:
+            st.metric("🇧🇩 BD Monthly Volume", metrics.get("total_monthly_searches_bd", "N/A"))
+        with m_col2:
+            st.metric("🌐 Worldwide Volume", metrics.get("total_monthly_searches_ww", "N/A"))
+        with m_col3:
+            st.metric("🔥 1-Month Avg Growth", metrics.get("avg_growth_pct", "N/A"))
+        with m_col4:
+            st.metric("💰 Commercial Intent", metrics.get("high_intent_share", "N/A"))
+        with m_col5:
+            st.metric("⭐ Top Trending Subtopic", metrics.get("top_trending_topic", "N/A")[:15] + "...")
+
+        st.markdown("---")
+
+        # Subtopic Volume Share Cards
+        st.subheader("📊 Topic Volume & Share Distribution")
+        topic_shares = vdata.get("topic_volume_breakdown", [])
+        if topic_shares:
+            ts_cols = st.columns(min(len(topic_shares), 4))
+            for idx, ts in enumerate(topic_shares):
+                col_idx = idx % len(ts_cols)
+                with ts_cols[col_idx]:
+                    st.markdown(f"""
+                    <div style="background-color:#f0f4f8; padding:12px; border-radius:8px; border-left:4px solid #1E88E5; margin-bottom:10px;">
+                        <h5 style="margin:0; color:#0d47a1;">{ts.get('topic')}</h5>
+                        <p style="margin:4px 0; font-size:0.9rem;"><b>Share:</b> {ts.get('volume_share_pct')} | <b>Searches:</b> {ts.get('monthly_searches')}</p>
+                        <p style="margin:0; font-size:0.85rem; color:#2e7d32;"><b>Trend:</b> {ts.get('trend_direction')}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Detailed Keywords Table & CSV Download
+        st.subheader("📋 Detailed 2026 Keywords & Search Volume Data")
+        kw_analytics = vdata.get("keywords_analytics", [])
+        if kw_analytics:
+            df = pd.DataFrame(kw_analytics)
+            df.columns = [
+                "Keyword / Query", 
+                "BD Monthly Volume", 
+                "Worldwide Volume", 
+                "1-Month Growth (%)", 
+                "Competition", 
+                "CPC (USD)", 
+                "Search Intent", 
+                "Top Locations"
+            ]
+
+            # Display Dataframe
+            st.dataframe(df, use_container_width=True, height=350)
+
+            # CSV Download Button
+            csv_bytes = df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="📥 Download Search Volume Analytics Data (CSV)",
+                data=csv_bytes,
+                file_name=f"search_volume_analytics_{vdata.get('niche', 'topic').lower().replace(' ', '_')}.csv",
+                mime="text/csv",
+                type="primary",
+                use_container_width=True
+            )
+
+            st.markdown("---")
+            st.subheader("⚡ 1-Click Article Creation from Keywords")
+            st.caption("Click '📝 Write Article' next to any keyword to instantly send it to the Article Generator tab!")
+
+            for idx, row in df.iterrows():
+                kw_str = str(row["Keyword / Query"])
+                vol_str = f"BD: {row['BD Monthly Volume']} | WW: {row['Worldwide Volume']} | Growth: {row['1-Month Growth (%)']}"
+                col_k1, col_k2 = st.columns([4, 1])
+                with col_k1:
+                    st.markdown(f"🔑 **{kw_str}** `({vol_str})` — *{row['Search Intent']} Intent*")
+                with col_k2:
+                    if st.button("📝 Write Article", key=f"btn_vol_kw_{idx}"):
+                        st.session_state["preset_keyword"] = kw_str
+                        st.success(f"Selected '{kw_str}'. Switch to 'Write & Auto-Publish Article' tab to generate!")
+
 

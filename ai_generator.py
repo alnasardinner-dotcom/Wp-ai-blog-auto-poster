@@ -423,3 +423,212 @@ STRICT JSON OUTPUT FORMAT:
                 last_err = str(e)
 
         raise Exception(f"⚠️ Google API Quota Exceeded / Rate Limit! আপনার এপিআই কী-টির গুগল ফ্রি টোকেন কোটা সাময়িকভাবে শেষ হয়েছে।\n\n💡 সমাধান:\n১. ১-২ মিনিট অপেক্ষা করে আবার চেষ্টা করুন।\n২. অথবা https://aistudio.google.com/app/apikey থেকে আরেকটি নতুন Free API Key বানিয়ে পেস্ট করে সেভ করুন।\n(গুগল রেসপন্স: {last_err})")
+
+    def research_search_volume_analytics(self, niche_or_topic: str, region: str = "Bangladesh 🇧🇩", timeframe: str = "Last 1 Month (30 Days)") -> dict:
+        """
+        Mines 2026 Monthly Search Volume Data, 1-Month Trends, Regional Volume (BD vs Global), 
+        Topic Volume Breakdown, and Competition Analytics for a given niche/keyword.
+        Returns structured JSON ready for table display and CSV export.
+        """
+        if not self.api_key:
+            raise ValueError("❌ Gemini API Key is missing! Please paste your valid API Key in the sidebar and click Save Settings.")
+
+        system_prompt = f"""
+You are an expert Search Engine Marketing Analyst, Keyword Data Scientist, and 2026 Search Volume Analytics Specialist.
+
+Analyze the niche/topic: '{niche_or_topic}' for region: '{region}' and timeframe filter: '{timeframe}'.
+
+Generate realistic, data-driven search volume estimates, 1-month trend growth rates, competition levels, commercial intent metrics, and location breakdowns.
+
+STRICT JSON OUTPUT FORMAT ONLY:
+{{
+  "niche": "{niche_or_topic}",
+  "region": "{region}",
+  "timeframe": "{timeframe}",
+  "summary_metrics": {{
+    "total_monthly_searches_bd": "45,000",
+    "total_monthly_searches_ww": "450,000",
+    "top_trending_topic": "High-Demand Subtopic for {niche_or_topic}",
+    "avg_growth_pct": "+38%",
+    "high_intent_share": "72%"
+  }},
+  "keywords_analytics": [
+    {{
+      "keyword": "{niche_or_topic} price in bd 2026",
+      "bd_monthly_volume": 14500,
+      "worldwide_monthly_volume": 52000,
+      "growth_1month_pct": "+42%",
+      "competition": "Medium",
+      "cpc_usd": "$0.65",
+      "search_intent": "Commercial",
+      "top_locations": "Dhaka, Chittagong, Sylhet"
+    }},
+    {{
+      "keyword": "best {niche_or_topic} for beginners",
+      "bd_monthly_volume": 9800,
+      "worldwide_monthly_volume": 78000,
+      "growth_1month_pct": "+28%",
+      "competition": "Low",
+      "cpc_usd": "$0.40",
+      "search_intent": "Informational",
+      "top_locations": "Dhaka, Rajshahi, Khulna"
+    }},
+    {{
+      "keyword": "top 10 {niche_or_topic} review 2026",
+      "bd_monthly_volume": 8200,
+      "worldwide_monthly_volume": 95000,
+      "growth_1month_pct": "+55%",
+      "competition": "High",
+      "cpc_usd": "$1.10",
+      "search_intent": "Commercial",
+      "top_locations": "Worldwide / Global"
+    }},
+    {{
+      "keyword": "where to buy official {niche_or_topic} BD",
+      "bd_monthly_volume": 6700,
+      "worldwide_monthly_volume": 18000,
+      "growth_1month_pct": "+31%",
+      "competition": "Medium",
+      "cpc_usd": "$0.85",
+      "search_intent": "Transactional",
+      "top_locations": "Dhaka, Gazipur, Narayanganj"
+    }},
+    {{
+      "keyword": "cheap {niche_or_topic} online offer",
+      "bd_monthly_volume": 5400,
+      "worldwide_monthly_volume": 64000,
+      "growth_1month_pct": "+19%",
+      "competition": "Low",
+      "cpc_usd": "$0.30",
+      "search_intent": "Transactional",
+      "top_locations": "Dhaka, Barisal, Rangpur"
+    }},
+    {{
+      "keyword": "{niche_or_topic} vs competitor comparison",
+      "bd_monthly_volume": 4900,
+      "worldwide_monthly_volume": 41000,
+      "growth_1month_pct": "+64%",
+      "competition": "Medium",
+      "cpc_usd": "$0.95",
+      "search_intent": "Commercial",
+      "top_locations": "Dhaka, Chittagong"
+    }},
+    {{
+      "keyword": "how to maintain {niche_or_topic} guide",
+      "bd_monthly_volume": 3800,
+      "worldwide_monthly_volume": 32000,
+      "growth_1month_pct": "+15%",
+      "competition": "Low",
+      "cpc_usd": "$0.20",
+      "search_intent": "Informational",
+      "top_locations": "Sylhet, Mymensingh"
+    }},
+    {{
+      "keyword": "latest features of {niche_or_topic} 2026",
+      "bd_monthly_volume": 7100,
+      "worldwide_monthly_volume": 88000,
+      "growth_1month_pct": "+70%",
+      "competition": "Medium",
+      "cpc_usd": "$0.75",
+      "search_intent": "Informational",
+      "top_locations": "Worldwide / Global"
+    }},
+    {{
+      "keyword": "is {niche_or_topic} worth buying in BD",
+      "bd_monthly_volume": 6100,
+      "worldwide_monthly_volume": 29000,
+      "growth_1month_pct": "+36%",
+      "competition": "Low",
+      "cpc_usd": "$0.50",
+      "search_intent": "Commercial",
+      "top_locations": "Dhaka, Chittagong, Comilla"
+    }},
+    {{
+      "keyword": "authentic {niche_or_topic} warranty & shop in BD",
+      "bd_monthly_volume": 5300,
+      "worldwide_monthly_volume": 12000,
+      "growth_1month_pct": "+22%",
+      "competition": "Medium",
+      "cpc_usd": "$0.80",
+      "search_intent": "Transactional",
+      "top_locations": "Dhaka, Chittagong, Bogra"
+    }}
+  ],
+  "topic_volume_breakdown": [
+    {{
+      "topic": "Market Price & Budget Deals",
+      "volume_share_pct": "32%",
+      "monthly_searches": 28000,
+      "trend_direction": "Rising 🔥"
+    }},
+    {{
+      "topic": "Buying Guides & Comparisons",
+      "volume_share_pct": "26%",
+      "monthly_searches": 22000,
+      "trend_direction": "Stable 📊"
+    }},
+    {{
+      "topic": "Official Shops & Warranty in BD",
+      "volume_share_pct": "24%",
+      "monthly_searches": 20000,
+      "trend_direction": "Rising 🔥"
+    }},
+    {{
+      "topic": "Maintenance & User Tips",
+      "volume_share_pct": "18%",
+      "monthly_searches": 15000,
+      "trend_direction": "Stable 📊"
+    }}
+  ]
+}}
+"""
+        models_to_try = [self.model_name, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
+        models_to_try = list(dict.fromkeys(models_to_try))
+
+        for model in models_to_try:
+            try:
+                client = genai.Client(api_key=self.api_key)
+                res = client.models.generate_content(
+                    model=model,
+                    contents=system_prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=0.7,
+                        response_mime_type="application/json"
+                    )
+                )
+                if res and res.text:
+                    raw = res.text.strip()
+                    cleaned = re.sub(r'^```json\s*', '', raw, flags=re.MULTILINE)
+                    cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
+                    return json.loads(cleaned)
+            except Exception:
+                continue
+
+        last_err = None
+        for m in models_to_try:
+            payload = {
+                "contents": [{"parts": [{"text": system_prompt}]}],
+                "generationConfig": {"temperature": 0.7, "responseMimeType": "application/json"}
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "x-goog-api-key": self.api_key
+            }
+
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={self.api_key}"
+            try:
+                r = requests.post(url, headers=headers, json=payload, timeout=30)
+                if r.status_code == 200:
+                    raw = r.json()['candidates'][0]['content']['parts'][0]['text']
+                    cleaned = re.sub(r'^```json\s*', '', raw.strip(), flags=re.MULTILINE)
+                    cleaned = re.sub(r'```$', '', cleaned, flags=re.MULTILINE).strip()
+                    return json.loads(cleaned)
+                else:
+                    last_err = f"HTTP {r.status_code}: {r.text}"
+                    if r.status_code in [429, 400, 404]:
+                        continue
+            except Exception as e:
+                last_err = str(e)
+
+        raise Exception(f"⚠️ Google API Quota Exceeded / Rate Limit! (গুগল রেসপন্স: {last_err})")
+
