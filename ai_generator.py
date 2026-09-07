@@ -426,19 +426,19 @@ STRICT JSON OUTPUT FORMAT:
 
     def research_search_volume_analytics(self, niche_or_topic: str, region: str = "Bangladesh 🇧🇩", timeframe: str = "Last 1 Month (30 Days)") -> dict:
         """
-        Mines 2026 Monthly Search Volume Data, 1-Month Trends, Regional Volume (BD vs Global), 
-        Topic Volume Breakdown, and Competition Analytics for a given niche/keyword.
+        Mines 2026 Monthly Search Volume Data across Google (BD vs Global), ChatGPT Search Queries, 
+        Perplexity & AI Overviews, 1-Month Trends, Topic Volume Breakdown, and Competition Analytics.
         Returns structured JSON ready for table display and CSV export.
         """
         if not self.api_key:
             raise ValueError("❌ Gemini API Key is missing! Please paste your valid API Key in the sidebar and click Save Settings.")
 
         system_prompt = f"""
-You are an expert Search Engine Marketing Analyst, Keyword Data Scientist, and 2026 Search Volume Analytics Specialist.
+You are an expert Multi-AI Search Engine Analyst, Keyword Data Scientist, and 2026 Search Volume Analytics Specialist.
 
 Analyze the niche/topic: '{niche_or_topic}' for region: '{region}' and timeframe filter: '{timeframe}'.
 
-Generate realistic, data-driven search volume estimates, 1-month trend growth rates, competition levels, commercial intent metrics, and location breakdowns.
+Generate realistic, data-driven search volume estimates across Google (BD & Worldwide), ChatGPT Search Queries, Perplexity/Claude Search Queries, 1-month trend growth rates, competition levels, commercial intent metrics, and location breakdowns.
 
 STRICT JSON OUTPUT FORMAT ONLY:
 {{
@@ -448,6 +448,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
   "summary_metrics": {{
     "total_monthly_searches_bd": "45,000",
     "total_monthly_searches_ww": "450,000",
+    "total_chatgpt_queries": "120,000",
+    "total_perplexity_queries": "85,000",
     "top_trending_topic": "High-Demand Subtopic for {niche_or_topic}",
     "avg_growth_pct": "+38%",
     "high_intent_share": "72%"
@@ -457,6 +459,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "{niche_or_topic} price in bd 2026",
       "bd_monthly_volume": 14500,
       "worldwide_monthly_volume": 52000,
+      "chatgpt_monthly_volume": 18500,
+      "perplexity_ai_volume": 12000,
       "growth_1month_pct": "+42%",
       "competition": "Medium",
       "cpc_usd": "$0.65",
@@ -467,6 +471,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "best {niche_or_topic} for beginners",
       "bd_monthly_volume": 9800,
       "worldwide_monthly_volume": 78000,
+      "chatgpt_monthly_volume": 32000,
+      "perplexity_ai_volume": 21000,
       "growth_1month_pct": "+28%",
       "competition": "Low",
       "cpc_usd": "$0.40",
@@ -477,6 +483,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "top 10 {niche_or_topic} review 2026",
       "bd_monthly_volume": 8200,
       "worldwide_monthly_volume": 95000,
+      "chatgpt_monthly_volume": 28000,
+      "perplexity_ai_volume": 19500,
       "growth_1month_pct": "+55%",
       "competition": "High",
       "cpc_usd": "$1.10",
@@ -487,6 +495,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "where to buy official {niche_or_topic} BD",
       "bd_monthly_volume": 6700,
       "worldwide_monthly_volume": 18000,
+      "chatgpt_monthly_volume": 7500,
+      "perplexity_ai_volume": 5200,
       "growth_1month_pct": "+31%",
       "competition": "Medium",
       "cpc_usd": "$0.85",
@@ -497,6 +507,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "cheap {niche_or_topic} online offer",
       "bd_monthly_volume": 5400,
       "worldwide_monthly_volume": 64000,
+      "chatgpt_monthly_volume": 14000,
+      "perplexity_ai_volume": 9800,
       "growth_1month_pct": "+19%",
       "competition": "Low",
       "cpc_usd": "$0.30",
@@ -507,6 +519,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "{niche_or_topic} vs competitor comparison",
       "bd_monthly_volume": 4900,
       "worldwide_monthly_volume": 41000,
+      "chatgpt_monthly_volume": 22000,
+      "perplexity_ai_volume": 16500,
       "growth_1month_pct": "+64%",
       "competition": "Medium",
       "cpc_usd": "$0.95",
@@ -517,6 +531,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "how to maintain {niche_or_topic} guide",
       "bd_monthly_volume": 3800,
       "worldwide_monthly_volume": 32000,
+      "chatgpt_monthly_volume": 16500,
+      "perplexity_ai_volume": 11000,
       "growth_1month_pct": "+15%",
       "competition": "Low",
       "cpc_usd": "$0.20",
@@ -527,6 +543,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "latest features of {niche_or_topic} 2026",
       "bd_monthly_volume": 7100,
       "worldwide_monthly_volume": 88000,
+      "chatgpt_monthly_volume": 35000,
+      "perplexity_ai_volume": 24000,
       "growth_1month_pct": "+70%",
       "competition": "Medium",
       "cpc_usd": "$0.75",
@@ -537,6 +555,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "is {niche_or_topic} worth buying in BD",
       "bd_monthly_volume": 6100,
       "worldwide_monthly_volume": 29000,
+      "chatgpt_monthly_volume": 11500,
+      "perplexity_ai_volume": 8200,
       "growth_1month_pct": "+36%",
       "competition": "Low",
       "cpc_usd": "$0.50",
@@ -547,6 +567,8 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "keyword": "authentic {niche_or_topic} warranty & shop in BD",
       "bd_monthly_volume": 5300,
       "worldwide_monthly_volume": 12000,
+      "chatgpt_monthly_volume": 6800,
+      "perplexity_ai_volume": 4900,
       "growth_1month_pct": "+22%",
       "competition": "Medium",
       "cpc_usd": "$0.80",
@@ -559,29 +581,34 @@ STRICT JSON OUTPUT FORMAT ONLY:
       "topic": "Market Price & Budget Deals",
       "volume_share_pct": "32%",
       "monthly_searches": 28000,
+      "chatgpt_share": "25,000 queries",
       "trend_direction": "Rising 🔥"
     }},
     {{
       "topic": "Buying Guides & Comparisons",
       "volume_share_pct": "26%",
       "monthly_searches": 22000,
+      "chatgpt_share": "38,000 queries",
       "trend_direction": "Stable 📊"
     }},
     {{
       "topic": "Official Shops & Warranty in BD",
       "volume_share_pct": "24%",
       "monthly_searches": 20000,
+      "chatgpt_share": "15,000 queries",
       "trend_direction": "Rising 🔥"
     }},
     {{
       "topic": "Maintenance & User Tips",
       "volume_share_pct": "18%",
       "monthly_searches": 15000,
+      "chatgpt_share": "22,000 queries",
       "trend_direction": "Stable 📊"
     }}
   ]
 }}
 """
+
         models_to_try = [self.model_name, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
         models_to_try = list(dict.fromkeys(models_to_try))
 
