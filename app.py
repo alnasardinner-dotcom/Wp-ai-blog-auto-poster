@@ -14,18 +14,21 @@ try:
     import modules.brand_performance
     import modules.boost_monitor
     import modules.competitor_intelligence
+    import modules.semrush_engine
     importlib.reload(modules.ai_generator)
     importlib.reload(modules.wp_publisher)
     importlib.reload(modules.ai_analysis)
     importlib.reload(modules.brand_performance)
     importlib.reload(modules.boost_monitor)
     importlib.reload(modules.competitor_intelligence)
+    importlib.reload(modules.semrush_engine)
     from modules.ai_generator import AIContentGenerator
     from modules.wp_publisher import WordPressPublisher
     from modules.ai_analysis import render_visibility_overview, render_competitor_research, render_prompt_research
     from modules.brand_performance import render_brand_performance, render_perception, render_narrative_drivers, render_questions
     from modules.boost_monitor import render_site_audit, render_prompt_tracking
     from modules.competitor_intelligence import render_competitor_intelligence_tab
+    from modules.semrush_engine import generate_semrush_50_keywords, generate_answerthepublic_50_questions
 except ImportError:
     import ai_generator
     import wp_publisher
@@ -33,18 +36,21 @@ except ImportError:
     import brand_performance
     import boost_monitor
     import competitor_intelligence
+    import semrush_engine
     importlib.reload(ai_generator)
     importlib.reload(wp_publisher)
     importlib.reload(ai_analysis)
     importlib.reload(brand_performance)
     importlib.reload(boost_monitor)
     importlib.reload(competitor_intelligence)
+    importlib.reload(semrush_engine)
     from ai_generator import AIContentGenerator
     from wp_publisher import WordPressPublisher
     from ai_analysis import render_visibility_overview, render_competitor_research, render_prompt_research
     from brand_performance import render_brand_performance, render_perception, render_narrative_drivers, render_questions
     from boost_monitor import render_site_audit, render_prompt_tracking
     from competitor_intelligence import render_competitor_intelligence_tab
+    from semrush_engine import generate_semrush_50_keywords, generate_answerthepublic_50_questions
 
 try:
     import google.generativeai as genai
@@ -74,7 +80,7 @@ def save_config(data):
 
 # Page Configuration
 st.set_page_config(
-    page_title="RankNaser Live Research & Competitor Intelligence Console",
+    page_title="RankNaser Semrush & Ahrefs Keyword Intelligence Console",
     page_icon="🔎",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -174,9 +180,9 @@ st.markdown("""
 if "generated_article" not in st.session_state:
     st.session_state["generated_article"] = None
 if "preset_keyword" not in st.session_state:
-    st.session_state["preset_keyword"] = "SEO Expert & AI Automation BD"
+    st.session_state["preset_keyword"] = "SEO Expert BD"
 if "search_query" not in st.session_state:
-    st.session_state["search_query"] = ""
+    st.session_state["search_query"] = "SEO Expert BD"
 if "is_credentials_unlocked" not in st.session_state:
     st.session_state["is_credentials_unlocked"] = False
 
@@ -284,113 +290,109 @@ with st.sidebar:
 # TOP LIVE RESEARCH & SEARCH CONSOLE
 st.markdown("""
 <div class="search-box-card">
-    <div class="search-title">🔎 RankNaser 2026 Live Keyword & Competitor Research Console</div>
-    <div class="search-subtitle">Type ANY Keyword, Topic, or Competitor Domain to run Live AI Research, AnswerThePublic Questions, Search Volume & Competitor Intelligence.</div>
+    <div class="search-title">🔎 Semrush & Ahrefs Style Keyword Magic Intelligence Console</div>
+    <div class="search-subtitle">Search ANY Keyword, Topic, or Domain to get 50+ Deduplicated Keywords, Search Intent, Competitor Ranks & 1-Click Publishing.</div>
 </div>
 """, unsafe_allow_html=True)
 
 col_s1, col_s2 = st.columns([4, 1])
 with col_s1:
     user_search_input = st.text_input(
-        "Enter Keyword, Topic, or Competitor URL to Research Live:",
-        value=st.session_state.get("preset_keyword", "SEO Expert & AI Automation BD"),
-        placeholder="e.g. Portable Monitor Price in BD, Portable SSD, techlandbd.com, Gaming PC 2026",
+        "Enter Target Keyword or Topic to Research 50+ Results:",
+        value=st.session_state.get("search_query", "SEO Expert BD"),
+        placeholder="e.g. Laptop Price in BD, Portable Monitor, techlandbd.com, Gaming PC 2026",
         key="main_search_console_input"
     )
 
 with col_s2:
     st.write("")
     st.write("")
-    run_research = st.button("🔍 Research Live", type="primary", use_container_width=True)
+    run_research = st.button("🔍 Search 50+ Results", type="primary", use_container_width=True)
 
 if run_research or user_search_input:
     st.session_state["search_query"] = user_search_input
     st.session_state["preset_keyword"] = user_search_input
 
-target_kw = st.session_state.get("search_query", "SEO Expert & AI Automation BD")
+target_kw = st.session_state.get("search_query", "SEO Expert BD")
 
-st.markdown(f"### 📊 Live Research & Strategy Dashboard for: **`{target_kw}`**")
+st.markdown(f"### 📊 Live Semrush/Ahrefs Keyword Analytics for: **`{target_kw}`**")
+
+# Generate 50+ unique deduplicated keywords dataframe
+df_50_kws = generate_semrush_50_keywords(target_kw)
+df_50_questions = generate_answerthepublic_50_questions(target_kw)
+
+# Top KPI Summary Cards
+total_vol = df_50_kws["BD Google Vol"].sum() if "BD Google Vol" in df_50_kws.columns else 45000
+avg_kd = int(df_50_kws["KD %"].mean()) if "KD %" in df_50_kws.columns else 42
+
+col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+with col_m1:
+    st.metric("Total Keywords Found", f"{len(df_50_kws)} Unique", "Deduplicated ✅")
+with col_m2:
+    st.metric("Total Potential Traffic", f"{total_vol:,} / mo", "+14% Growth")
+with col_m3:
+    st.metric("Average KD %", f"{avg_kd}%", "Medium Difficulty")
+with col_m4:
+    st.metric("Primary Intent", "Commercial / Transactional", "High Conversion")
+
+st.markdown("---")
 
 # MAIN WORKSPACE TABS
-tab_research, tab_competitors, tab_article, tab_audit, tab_visibility = st.tabs([
-    "🔎 1. Live Keyword & Intent Research (AnswerThePublic)",
-    "🕵️ 2. Competitor 360° Intelligence & Spy",
-    "📝 3. Write & Auto-Publish Article (1-Click)",
-    "⚡ 4. Live Site Audit & GEO Readiness",
-    "👁️ 5. AI Visibility & Brand Intelligence"
+tab_semrush, tab_answerthepublic, tab_competitors, tab_article, tab_audit = st.tabs([
+    f"📊 1. Semrush 50+ Keywords Table ({len(df_50_kws)} Unique Results)",
+    "🔎 2. AnswerThePublic Questions & Comparisons",
+    "🕵️ 3. Competitor 360° Intelligence & Spy",
+    "📝 4. Write & Auto-Publish Article (1-Click)",
+    "⚡ 5. Live Site Audit & GEO Readiness"
 ])
 
 
-# --- TAB 1: KEYWORD & INTENT RESEARCH ---
-with tab_research:
-    st.subheader(f"🔎 AnswerThePublic & Multi-AI Intent Search for '{target_kw}'")
-    st.caption("Live search volume, user questions, prepositions, and search intent analysis.")
+# --- TAB 1: SEMRUSH 50+ KEYWORDS TABLE ---
+with tab_semrush:
+    st.subheader(f"📊 Semrush/Ahrefs Keyword Explorer: {len(df_50_kws)} Deduplicated Results for '{target_kw}'")
+    st.caption("Clean, non-duplicate keyword variations sorted by search volume, KD%, CPC, and SERP features.")
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Estimated Search Vol", "18,400 / mo", "+12% Growth")
-    with col2:
-        st.metric("Primary Intent", "Commercial", "High Purchase Intent")
-    with col3:
-        st.metric("Competition Level", "Medium (0.42)", "Good Opportunity")
-    with col4:
-        st.metric("Average CPC", "$0.85 USD", "High ROI")
+    # Search / Filter within the 50 keywords
+    filter_txt = st.text_input("🔎 Filter within 50+ Keywords:", placeholder="Filter by word (e.g. price, best, startech)...")
+    
+    filtered_df = df_50_kws
+    if filter_txt:
+        filtered_df = df_50_kws[df_50_kws["Keyword / Query"].str.contains(filter_txt, case=False, na=False)]
+
+    st.dataframe(filtered_df, use_container_width=True, height=450)
+
+    col_d1, col_d2 = st.columns([3, 1])
+    with col_d1:
+        csv_data = filtered_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label=f"📥 Download All {len(filtered_df)} Keywords Report (CSV)",
+            data=csv_data,
+            file_name=f"semrush_keywords_{target_kw.lower().replace(' ', '_')}.csv",
+            mime="text/csv",
+            type="primary",
+            use_container_width=True
+        )
 
     st.markdown("---")
-
-    if gemini_api_key and HAS_GEMINI:
-        with st.spinner(f"Generating live AnswerThePublic questions & intent for '{target_kw}' via Gemini AI..."):
-            try:
-                genai.configure(api_key=gemini_api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                prompt = f"""Provide AnswerThePublic search intent questions for '{target_kw}' in 4 categories:
-1. What/Why/How Questions (5 questions)
-2. Comparison (VS) Queries (3 queries)
-3. Transactional Price & Best Queries (4 queries)
-4. Recommended Focus Keywords & LSI terms."""
-                
-                resp = model.generate_content(prompt)
-                st.success("✅ Real-Time Gemini AI Intent Research Completed!")
-                st.markdown(resp.text)
-            except Exception as e:
-                st.info(f"Notice: {str(e)}")
-
-    st.markdown("---")
-    st.subheader("📋 2026 Search Volume & Topic Breakdown")
-    
-    vol_df = pd.DataFrame({
-        "Keyword / Query": [
-            f"{target_kw}",
-            f"Best {target_kw} 2026",
-            f"{target_kw} Price in Bangladesh",
-            f"How to choose {target_kw}",
-            f"Top rated {target_kw} guide"
-        ],
-        "BD Google Vol": [18400, 12200, 9500, 6400, 4800],
-        "ChatGPT Query Vol": ["High", "High", "Medium", "High", "Medium"],
-        "Search Intent": ["Commercial", "Commercial", "Transactional", "Informational", "Informational"],
-        "Competition": ["Medium", "High", "High", "Low", "Low"],
-        "Action": ["Write Article", "Write Article", "Write Article", "Write Article", "Write Article"]
-    })
-    
-    st.dataframe(vol_df, use_container_width=True)
-
-    csv_bytes = vol_df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="📥 Download Search Volume & Intent Report (CSV)",
-        data=csv_bytes,
-        file_name=f"search_volume_{target_kw.lower().replace(' ', '_')}.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
+    st.subheader("⚡ 1-Click Article Generator from Selected Keyword")
+    selected_kw = st.selectbox("Select ANY keyword from the 50+ results to generate article:", filtered_df["Keyword / Query"])
+    if st.button("🚀 Write Article for Selected Keyword", type="primary"):
+        st.session_state["preset_keyword"] = selected_kw
+        st.success(f"✅ Selected '{selected_kw}'! Click Tab 4 ('📝 Write & Auto-Publish Article') to generate.")
 
 
-# --- TAB 2: COMPETITOR INTELLIGENCE ---
+# --- TAB 2: ANSWER THE PUBLIC QUESTIONS ---
+with tab_answerthepublic:
+    st.subheader(f"🔎 AnswerThePublic Questions & Intent Queries for '{target_kw}'")
+    st.dataframe(df_50_questions, use_container_width=True)
+
+
+# --- TAB 3: COMPETITOR INTELLIGENCE ---
 with tab_competitors:
     render_competitor_intelligence_tab()
 
 
-# --- TAB 3: WRITE & AUTO-PUBLISH ARTICLE ---
+# --- TAB 4: WRITE & AUTO-PUBLISH ARTICLE ---
 with tab_article:
     st.subheader("📝 AI Content Generator & WordPress Auto-Publisher")
     st.caption("Generate EEAT & GEO optimized articles with Rank Math rules and push to WordPress in 1 click.")
@@ -454,11 +456,6 @@ with tab_article:
                         st.error(f"❌ Publishing Failed: {res.get('message')}")
 
 
-# --- TAB 4: SITE AUDIT ---
+# --- TAB 5: SITE AUDIT ---
 with tab_audit:
     render_site_audit()
-
-
-# --- TAB 5: AI VISIBILITY ---
-with tab_visibility:
-    render_visibility_overview()
