@@ -7,17 +7,30 @@ import pandas as pd
 try:
     import modules.ai_generator
     import modules.wp_publisher
+    import modules.ai_analysis
+    import modules.brand_performance
+    import modules.boost_monitor
     importlib.reload(modules.ai_generator)
     importlib.reload(modules.wp_publisher)
     from modules.ai_generator import AIContentGenerator
     from modules.wp_publisher import WordPressPublisher
+    from modules.ai_analysis import render_visibility_overview, render_competitor_research, render_prompt_research
+    from modules.brand_performance import render_brand_performance, render_perception, render_narrative_drivers, render_questions
+    from modules.boost_monitor import render_site_audit, render_prompt_tracking
 except ImportError:
     import ai_generator
     import wp_publisher
+    import ai_analysis
+    import brand_performance
+    import boost_monitor
     importlib.reload(ai_generator)
     importlib.reload(wp_publisher)
     from ai_generator import AIContentGenerator
     from wp_publisher import WordPressPublisher
+    from ai_analysis import render_visibility_overview, render_competitor_research, render_prompt_research
+    from brand_performance import render_brand_performance, render_perception, render_narrative_drivers, render_questions
+    from boost_monitor import render_site_audit, render_prompt_tracking
+
 
 # Config File Management
 CONFIG_FILE = "config.json"
@@ -107,6 +120,28 @@ saved_cfg = load_config()
 
 # Sidebar Configuration
 with st.sidebar:
+    st.markdown('<div style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">⚡ AI Visibility</div>', unsafe_allow_html=True)
+    
+    menu_options = [
+        "Visibility Overview",
+        "Competitor Research",
+        "Prompt Research",
+        "Brand Performance",
+        "Perception",
+        "Narrative Drivers",
+        "Questions",
+        "Site Audit",
+        "Prompt Tracking",
+        "Content Creation"
+    ]
+    
+    selected_page = st.radio(
+        "Navigation",
+        menu_options,
+        index=0,
+        label_visibility="collapsed"
+    )
+    st.markdown("---")
     st.header("⚙️ Configuration & Credentials")
     
     if not st.session_state.get("is_credentials_unlocked", False):
@@ -203,13 +238,34 @@ with st.sidebar:
         st.markdown("---")
         st.info("💡 **Tip**: Click **💾 Save Settings** to automatically remember your API keys & WP credentials.")
 
-# Main Navigation Tabs
-main_tab1, main_tab2, main_tab3, main_tab4 = st.tabs([
-    "📝 Write & Auto-Publish Article", 
-    "🤖 Multi-AI & 2026 Niche Intent Intelligence", 
-    "🔎 AnswerThePublic Search Intent Researcher",
-    "📊 2026 Search Volume & Topic Trends (CSV Export)"
-])
+# Page Routing
+if selected_page == "Visibility Overview":
+    render_visibility_overview()
+elif selected_page == "Competitor Research":
+    render_competitor_research()
+elif selected_page == "Prompt Research":
+    render_prompt_research()
+elif selected_page == "Brand Performance":
+    render_brand_performance()
+elif selected_page == "Perception":
+    render_perception()
+elif selected_page == "Narrative Drivers":
+    render_narrative_drivers()
+elif selected_page == "Questions":
+    render_questions()
+elif selected_page == "Site Audit":
+    render_site_audit()
+elif selected_page == "Prompt Tracking":
+    render_prompt_tracking()
+elif selected_page == "Content Creation":
+    # Main Navigation Tabs
+    main_tab1, main_tab2, main_tab3, main_tab4 = st.tabs([
+        "📝 Write & Auto-Publish Article", 
+        "🤖 Multi-AI & 2026 Niche Intent Intelligence", 
+        "🔎 AnswerThePublic Search Intent Researcher",
+        "📊 2026 Search Volume & Topic Trends (CSV Export)"
+    ])
+
 
 
 # --- TAB 1: ARTICLE GENERATOR ---
