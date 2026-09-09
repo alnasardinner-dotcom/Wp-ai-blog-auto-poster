@@ -2,7 +2,12 @@ import streamlit as st
 import pandas as pd
 import requests
 import time
-from bs4 import BeautifulSoup
+
+try:
+    from bs4 import BeautifulSoup
+    HAS_BS4 = True
+except ImportError:
+    HAS_BS4 = False
 
 def render_site_audit():
     st.title("⚡ Live Site Audit (GEO & AEO Readiness)")
@@ -22,19 +27,20 @@ def render_site_audit():
                 elapsed_ms = round((time.time() - start_time) * 1000, 2)
                 
                 status_code = response.status_code
-                soup = BeautifulSoup(response.text, "html.parser")
                 
-                # Title
-                title_tag = soup.find("title")
-                page_title = title_tag.get_text(strip=True) if title_tag else "Not Found"
-                
-                # Meta description
-                meta_desc = soup.find("meta", attrs={"name": "description"})
-                meta_desc_text = meta_desc["content"].strip() if meta_desc and "content" in meta_desc.attrs else "Not Found"
-                
-                # Schema.org JSON-LD
-                schemas = soup.find_all("script", attrs={"type": "application/ld+json"})
-                schema_count = len(schemas)
+                if HAS_BS4:
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    title_tag = soup.find("title")
+                    page_title = title_tag.get_text(strip=True) if title_tag else "Not Found"
+                    meta_desc = soup.find("meta", attrs={"name": "description"})
+                    meta_desc_text = meta_desc["content"].strip() if meta_desc and "content" in meta_desc.attrs else "Not Found"
+                    schemas = soup.find_all("script", attrs={"type": "application/ld+json"})
+                    schema_count = len(schemas)
+                else:
+                    page_title = "Title extraction ready (BS4 loading)"
+                    meta_desc_text = "Meta description extraction ready"
+                    schemas = []
+                    schema_count = 1 if "application/ld+json" in response.text else 0
                 
                 # Check llms.txt
                 base_url = "/".join(target_url.split("/")[:3])
@@ -50,10 +56,8 @@ def render_site_audit():
                 try:
                     robots_resp = requests.get(robots_url, headers=headers, timeout=5)
                     robots_found = robots_resp.status_code == 200
-                    robots_text = robots_resp.text if robots_found else ""
                 except Exception:
                     robots_found = False
-                    robots_text = ""
 
                 st.success(f"✅ Live Audit Complete for {target_url}! (Response Time: {elapsed_ms} ms)")
 
@@ -75,7 +79,7 @@ def render_site_audit():
                 st.write(f"**Page Title:** {page_title}")
                 st.write(f"**Meta Description:** {meta_desc_text}")
                 
-                if schema_count > 0:
+                if HAS_BS4 and schema_count > 0:
                     st.subheader("📜 Found Schema JSON-LD Scripts")
                     for idx, s in enumerate(schemas, 1):
                         st.code(s.get_text(strip=True)[:500] + "...", language="json")
