@@ -10,26 +10,38 @@ try:
     import modules.ai_analysis
     import modules.brand_performance
     import modules.boost_monitor
+    import modules.competitor_intelligence
     importlib.reload(modules.ai_generator)
     importlib.reload(modules.wp_publisher)
+    importlib.reload(modules.ai_analysis)
+    importlib.reload(modules.brand_performance)
+    importlib.reload(modules.boost_monitor)
+    importlib.reload(modules.competitor_intelligence)
     from modules.ai_generator import AIContentGenerator
     from modules.wp_publisher import WordPressPublisher
     from modules.ai_analysis import render_visibility_overview, render_competitor_research, render_prompt_research
     from modules.brand_performance import render_brand_performance, render_perception, render_narrative_drivers, render_questions
     from modules.boost_monitor import render_site_audit, render_prompt_tracking
+    from modules.competitor_intelligence import render_competitor_intelligence_tab
 except ImportError:
     import ai_generator
     import wp_publisher
     import ai_analysis
     import brand_performance
     import boost_monitor
+    import competitor_intelligence
     importlib.reload(ai_generator)
     importlib.reload(wp_publisher)
+    importlib.reload(ai_analysis)
+    importlib.reload(brand_performance)
+    importlib.reload(boost_monitor)
+    importlib.reload(competitor_intelligence)
     from ai_generator import AIContentGenerator
     from wp_publisher import WordPressPublisher
     from ai_analysis import render_visibility_overview, render_competitor_research, render_prompt_research
     from brand_performance import render_brand_performance, render_perception, render_narrative_drivers, render_questions
     from boost_monitor import render_site_audit, render_prompt_tracking
+    from competitor_intelligence import render_competitor_intelligence_tab
 
 # Config File Management
 CONFIG_FILE = "config.json"
@@ -53,47 +65,128 @@ def save_config(data):
 
 # Page Configuration
 st.set_page_config(
-    page_title="Ranknaser 2026 AI Visibility & Search Intelligence",
-    page_icon="🚀",
-    layout="wide"
+    page_title="RankNaser Enterprise SEO & AI Visibility Platform",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Custom Styling
+# Off-White & Light Gray Professional SaaS Styling
 st.markdown("""
 <style>
-    .main-title {
-        color: #1E88E5;
-        font-size: 2.3rem;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+
+    /* Overall App Off-White Background */
+    .stApp {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+    }
+
+    /* Header Container Card */
+    .header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 24px 30px;
+        border-radius: 14px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+    }
+    
+    .header-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .live-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        margin-bottom: 10px;
     }
-    .subtitle {
-        color: #555;
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
+
+    /* Metric Cards Styling */
+    div[data-testid="stMetric"] {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
     }
-    .badge-keyword {
-        background-color: #e3f2fd;
-        color: #0d47a1;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: bold;
+
+    div[data-testid="stMetric"] label {
+        color: #64748b !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
     }
-    .seo-card {
-        border-left: 5px solid #4caf50;
-        background-color: #f9f9f9;
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 15px;
+
+    div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
+        color: #0f172a !important;
+        font-size: 1.6rem !important;
+        font-weight: 800 !important;
     }
-    .query-card {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        padding: 10px 15px;
-        border-radius: 6px;
-        margin-bottom: 8px;
+
+    /* Primary Action Buttons */
+    .stButton>button[kind="primary"] {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        border: 1px solid #4338ca !important;
+        padding: 10px 20px !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+
+    .stButton>button[kind="primary"]:hover {
+        background: #4338ca !important;
+    }
+
+    /* Tab Styling */
+    button[data-baseweb="tab"] {
+        font-weight: 600 !important;
+        color: #64748b !important;
+    }
+
+    button[aria-selected="true"] {
+        color: #4f46e5 !important;
+        border-bottom: 2px solid #4f46e5 !important;
+    }
+
+    /* Sidebar Background */
+    [data-testid="stSidebar"] {
+        background-color: #f1f5f9 !important;
+        border-right: 1px solid #e2e8f0 !important;
     }
 </style>
+""", unsafe_allow_html=True)
+
+# Main Banner Header
+st.markdown("""
+<div class="header-card">
+    <div class="live-badge">⚡ Enterprise v4.2 • Live Engine Active</div>
+    <div class="header-title">RankNaser 2026 Competitive & Search Intelligence Copilot</div>
+    <div class="header-subtitle">WordPress REST API Publisher • Rank Math GEO Compliance • Live Competitor Spy • 1-Click Publishing</div>
+</div>
 """, unsafe_allow_html=True)
 
 # Session State Initialization
@@ -113,9 +206,9 @@ if "is_credentials_unlocked" not in st.session_state:
 # Load Saved Credentials
 saved_cfg = load_config()
 
-# Sidebar Configuration
+# Sidebar Navigation matching user image
 with st.sidebar:
-    st.markdown('<div style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">⚡ AI Visibility</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 10px;">⚡ AI Visibility</div>', unsafe_allow_html=True)
     
     menu_options = [
         "Visibility Overview",
@@ -136,12 +229,13 @@ with st.sidebar:
         index=0,
         label_visibility="collapsed"
     )
+    
     st.markdown("---")
-    st.header("⚙️ Configuration & Credentials")
+    st.header("⚙️ Settings & Credentials")
     
     if not st.session_state.get("is_credentials_unlocked", False):
         st.warning("🔒 **Settings Locked**")
-        st.caption("Please enter password to view or modify API keys & credentials.")
+        st.caption("Enter password to view or edit API keys & WP credentials.")
         
         pwd_input = st.text_input("🔑 Password", type="password", key="pwd_credentials_input")
         if st.button("🔓 Unlock Credentials", use_container_width=True):
@@ -232,7 +326,7 @@ with st.sidebar:
         st.markdown("---")
         st.info("💡 **Tip**: Click **💾 Save Settings** to automatically remember your API keys & WP credentials.")
 
-# Page Routing
+# Page Routing for all 10 sidebar options
 if selected_page == "Visibility Overview":
     render_visibility_overview()
 elif selected_page == "Competitor Research":
@@ -252,13 +346,14 @@ elif selected_page == "Site Audit":
 elif selected_page == "Prompt Tracking":
     render_prompt_tracking()
 elif selected_page == "Content Creation":
-    main_tab1, main_tab2, main_tab3, main_tab4 = st.tabs([
+    main_tab1, main_tab2, main_tab3, main_tab4, main_tab5 = st.tabs([
         "📝 Write & Auto-Publish Article", 
+        "🕵️ Competitor 360° Intelligence & Strategy Copilot",
         "🤖 Multi-AI & 2026 Niche Intent Intelligence", 
         "🔎 AnswerThePublic Search Intent Researcher",
         "📊 2026 Search Volume & Topic Trends (CSV Export)"
     ])
-    
+
     with main_tab1:
         col1, col2 = st.columns([2, 1])
 
@@ -318,3 +413,6 @@ elif selected_page == "Content Creation":
                             st.success(f"✅ Published to WordPress! Post ID: {res.get('post_id')}")
                         else:
                             st.error(f"❌ Publishing Failed: {res.get('message')}")
+
+    with main_tab2:
+        render_competitor_intelligence_tab()
